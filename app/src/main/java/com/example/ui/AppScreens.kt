@@ -136,12 +136,37 @@ fun LoginScreen(viewModel: MainViewModel) {
                 }
             }
 
-            // Quick Demo Accounts to help testing
+            // Safety Information & Guidelines
             Spacer(modifier = Modifier.height(24.dp))
-            DemoAccountsHelper(onAccountSelected = { u, p ->
-                email = u
-                password = p
-            })
+            Surface(
+                color = Color.Black.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, FF_Orange.copy(alpha = 0.2f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🔥", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "BOOYAH ARENA RULES & SAFETY",
+                            color = FF_Orange,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "• অবশ্যই আপনার রিয়েল ফ্রি ফায়ার UID এবং IGN দিয়ে টুর্নামেন্ট গুলোতে জয়েন করুন।\n" +
+                        "• পেমেন্ট রিকোয়েস্ট বা উইথড্র করার সময় বিকাশ, নগদ অথবা রকেট রিসিভার সঠিক নাম্বারটি চেক করুন।\n" +
+                        "• যেকোনো রুম আইডি ও পাসওয়ার্ড ম্যাচ শুরুর নিয়মিত ১৫ মিনিট পূর্বে আপনার নিবন্ধিত ম্যাচ সেকশনে এবং পুশ নোটিফিকেশনে দেখানো হবে।",
+                        color = FF_Text_Secondary,
+                        fontSize = 11.sp,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
         }
     }
 }
@@ -338,7 +363,15 @@ fun HomeScreen(viewModel: MainViewModel) {
             }
         }
 
-        if (filteredTournaments.isEmpty()) {
+        if (filterTag == "PROFILE") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                GamerProfileSection(activeUser, registrations, viewModel)
+            }
+        } else if (filteredTournaments.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -747,45 +780,102 @@ fun WalletScreen(viewModel: MainViewModel) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (activeTab == "DEPOSIT") {
+                // VISUAL STEP TRACKER WIZARD
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("১. ক্যাশ ইন/সেন্ডমানি", "২. ট্রানজেকশন তথ্য", "৩. অটো ভেরিফিকেশন").forEachIndexed { index, step ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(FF_Card_Bg_Tinted, RoundedCornerShape(4.dp))
+                                .border(1.dp, if (index == 1) FF_Orange else Color.Transparent, RoundedCornerShape(4.dp))
+                                .padding(vertical = 6.dp, horizontal = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(step, color = if (index == 1) FF_Yellow else Color.White.copy(alpha = 0.5f), fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                        }
+                    }
+                }
+
                 // Deposit Reference / Instructions
                 Surface(
                     color = walletMethodColor(walletMethod).copy(alpha = 0.1f),
                     border = BorderStroke(1.dp, walletMethodColor(walletMethod).copy(alpha = 0.3f)),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("⚠️ নিচের ${walletMethod} পার্সোনাল নাম্বারে 'Send Money' করুন:", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("⚡", fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("নিচের ${walletMethod} পার্সোনাল নাম্বারে 'Send Money' করুন:", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(adminNumber, color = FF_Yellow, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                            Text(adminNumber, color = FF_Yellow, fontSize = 20.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                             Button(
                                 onClick = { clipboardManager.setText(AnnotatedString(adminNumber)) },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.15f)),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                modifier = Modifier.height(32.dp)
+                                colors = ButtonDefaults.buttonColors(containerColor = walletMethodColor(walletMethod)),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(34.dp)
                             ) {
-                                Text("নাম্বার কপি করুন", color = Color.White, fontSize = 11.sp)
+                                Text("কপি করুন", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            "টাকা পাঠানোর পর নিচের বক্সে টাকার পরিমাণ, আপনার প্রেরক মোবাইল নাম্বার এবং ১২ সংখ্যার TrxID লিখে সাবমিট করুন। এডমিন ১-১০ মিনিটের মধ্যে স্বয়ংক্রিয় ভেরিফিকেশন সম্পন্ন করবেন।",
-                            color = Color.LightGray,
-                            fontSize = 11.sp
+                            "টাকা সঠিকভাবে সেন্ড মানি করার পর নিচের ফরমে সঠিক পরিমাণ, আপনার মোবাইল নাম্বার এবং ট্রানজেকশন ট্র্যাকিং আইডি (TrxID) দিন। এডমিন ভেরিফাই করে ১ থেকে ১০ মিনিটের মধ্যে ব্যালেন্স যোগ করবেন।",
+                            color = FF_Text_Secondary,
+                            fontSize = 10.sp,
+                            lineHeight = 15.sp
                         )
                     }
                 }
+
+                Text("পরিমাণ পছন্দ করুন (Presets)", color = Color.LightGray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("50", "100", "200", "500", "1000").forEach { preset ->
+                        Surface(
+                            color = if (amountText == preset) walletMethodColor(walletMethod) else FF_Card_Bg,
+                            border = BorderStroke(1.dp, if (amountText == preset) Color.White else Color.Gray.copy(alpha = 0.3f)),
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { amountText = preset }
+                        ) {
+                            Text(
+                                text = "+${preset}৳",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = amountText,
                     onValueChange = { amountText = it },
                     label = { Text("কত টাকা পাঠিয়েছেন (BDT)", color = FF_Text_Secondary) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -793,9 +883,10 @@ fun WalletScreen(viewModel: MainViewModel) {
                 OutlinedTextField(
                     value = senderOrReceiverPhone,
                     onValueChange = { senderOrReceiverPhone = it },
-                    label = { Text("আপনার মোবাইল নাম্বার (${walletMethod})", color = FF_Text_Secondary) },
+                    label = { Text("আপনার মোবাইল নাম্বার (১১ সংখ্যা)", color = FF_Text_Secondary) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -803,9 +894,10 @@ fun WalletScreen(viewModel: MainViewModel) {
                 OutlinedTextField(
                     value = transactionIdText,
                     onValueChange = { transactionIdText = it },
-                    label = { Text("ট্রানজেকশন আইডি (TrxID)", color = FF_Text_Secondary) },
+                    label = { Text("ট্রানজেকশন আইডি (TrxID eg: BK847J9D6T)", color = FF_Text_Secondary) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -813,6 +905,18 @@ fun WalletScreen(viewModel: MainViewModel) {
                 Button(
                     onClick = {
                         val amt = amountText.toDoubleOrNull() ?: 0.0
+                        if (amt < 50.0) {
+                            viewModel.errorMessage = "নূন্যতম ডিপোজিট ৫০ টাকা!"
+                            return@Button
+                        }
+                        if (senderOrReceiverPhone.length < 11) {
+                            viewModel.errorMessage = "দয়া করে সঠিক ১১ সংখ্যার মোবাইল নাম্বার দিন!"
+                            return@Button
+                        }
+                        if (transactionIdText.trim().isEmpty()) {
+                            viewModel.errorMessage = "দয়া করে ট্রানজেকশন আইডি প্রদান করুন!"
+                            return@Button
+                        }
                         viewModel.submitDeposit(walletMethod, amt, senderOrReceiverPhone, transactionIdText)
                         // Clear input
                         amountText = ""
@@ -825,19 +929,67 @@ fun WalletScreen(viewModel: MainViewModel) {
                         .fillMaxWidth()
                         .height(48.dp)
                 ) {
-                    Text("ডিপোজিট রিকুয়েস্ট পাঠান (ভেরিফাই)", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("নিরাপদ পেমেন্ট ভেরিফাই করুন 🛡️", color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
             } else {
                 // Withdraw configuration
-                Text("আপনার জমাকৃত জয়েনিং ব্যালেন্স বা টুর্নামেন্ট উইনিং থেকে আপনি সরাসরি বিকাশ/নগদে ক্যাশআউট করতে পারবেন। নূন্যতম উত্তোলন ১০০৳।", color = Color.Gray, fontSize = 11.sp, modifier = Modifier.padding(bottom = 16.dp))
+                Surface(
+                    color = FF_Orange_Light.copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, FF_Orange.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("🛡️ ব্যালেন্স উত্তোলন নীতিমালা:", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            "• টুর্নামেন্ট জিতে বা ব্যালেন্স ডিপোজিট রিফান্ড থেকে আপনার ক্যাশআউট সুবিধা পাবেন।\n" +
+                            "• নূন্যতম ক্যাশআউট লিমিট ১০০ টাকা। সর্বোচ্চ ক্যাশআউট লিমিট ২৫,০০০ টাকা প্রতিদিন।\n" +
+                            "• সাধারণত পেমেন্ট রিকোয়েস্ট করার ১ থেকে ২৪ ঘন্টার মধ্যে তা সরাসরি আপনার প্রদেয় মোবাইল ব্যাংকিং নাম্বারে পৌঁছে যাবে।",
+                            color = FF_Text_Secondary,
+                            fontSize = 11.sp,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+
+                Text("উত্তোলনের পরিমাণ পছন্দ করুন", color = Color.LightGray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("100", "200", "500", "1000", "2000").forEach { preset ->
+                        Surface(
+                            color = if (amountText == preset) walletMethodColor(walletMethod) else FF_Card_Bg,
+                            border = BorderStroke(1.dp, if (amountText == preset) Color.White else Color.Gray.copy(alpha = 0.3f)),
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { amountText = preset }
+                        ) {
+                            Text(
+                                text = "${preset}৳",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = amountText,
                     onValueChange = { amountText = it },
-                    label = { Text("টাকার পরিমাণ (Minimum 100৳)", color = FF_Text_Secondary) },
+                    label = { Text("টাকার পরিমাণ (নূন্যতম ১০০৳)", color = FF_Text_Secondary) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -845,9 +997,10 @@ fun WalletScreen(viewModel: MainViewModel) {
                 OutlinedTextField(
                     value = senderOrReceiverPhone,
                     onValueChange = { senderOrReceiverPhone = it },
-                    label = { Text("যে নাম্বারে টাকা নিবেন (${walletMethod})", color = FF_Text_Secondary) },
+                    label = { Text("যে নাম্বারে ক্যাশআউট নিবেন (${walletMethod})", color = FF_Text_Secondary) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -855,6 +1008,18 @@ fun WalletScreen(viewModel: MainViewModel) {
                 Button(
                     onClick = {
                         val amt = amountText.toDoubleOrNull() ?: 0.0
+                        if (amt < 100.0) {
+                            viewModel.errorMessage = "নূন্যতম উত্তোলন ১০০ টাকা হতে হবে!"
+                            return@Button
+                        }
+                        if (amt > activeUser.balance) {
+                            viewModel.errorMessage = "আপনার একাউন্টে পর্যাপ্ত উইনিং ব্যালেন্স নেই!"
+                            return@Button
+                        }
+                        if (senderOrReceiverPhone.length < 11) {
+                            viewModel.errorMessage = "সঠিক ১১ সংখ্যার রিসিভার নাম্বার দিন!"
+                            return@Button
+                        }
                         viewModel.submitWithdraw(walletMethod, amt, senderOrReceiverPhone)
                         // Clear input
                         amountText = ""
@@ -866,7 +1031,7 @@ fun WalletScreen(viewModel: MainViewModel) {
                         .fillMaxWidth()
                         .height(48.dp)
                 ) {
-                    Text("টাকা উত্তোলনের রিকোয়েস্ট দিন", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("টাকা উত্তোলনের রিকোয়েস্ট নিশ্চিত করুন ➔", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -931,6 +1096,26 @@ fun PaymentHistoryItem(payment: PaymentEntity) {
 // ==========================================
 @Composable
 fun AdminPanelScreen(viewModel: MainViewModel) {
+    val loggedUser = viewModel.currentUser
+    if (loggedUser == null || !loggedUser.isAdmin) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(FF_Dark_Bg),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("⚠️ অননুমোদিত অ্যাক্সেস ব্লক করা হয়েছে!", color = FF_Red, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("দয়া করে সঠিক এডমিন ক্রেডেনশিয়াল ব্যবহার করুন।", color = Color.Gray, fontSize = 13.sp)
+            }
+        }
+        LaunchedEffect(Unit) {
+            viewModel.currentScreen = Screen.Home
+        }
+        return
+    }
+
     val users by viewModel.allUsers.collectAsState()
     val allPayments by viewModel.allPayments.collectAsState()
     val tournaments by viewModel.tournaments.collectAsState()
@@ -1325,41 +1510,7 @@ fun GameLogoHeader() {
     }
 }
 
-@Composable
-fun DemoAccountsHelper(onAccountSelected: (String, String) -> Unit) {
-    Surface(
-        color = Color.Black.copy(alpha = 0.4f),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f)),
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text("📢 পরীক্ষা করার সুবিধার্থে ডেমো অ্যাকাউন্ট সিলেকশন:", color = FF_Yellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = { onAccountSelected("bd1rakib6677@gmail.com", "rakib123") },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f)),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(4.dp)
-                ) {
-                    Text("🎮 প্লেয়ার রাকিব\n(rakib123)", color = Color.White, fontSize = 10.sp, textAlign = TextAlign.Center)
-                }
 
-                Button(
-                    onClick = { onAccountSelected("admin@booyah.com", "admin123") },
-                    colors = ButtonDefaults.buttonColors(containerColor = FF_Orange.copy(alpha = 0.2f)),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(4.dp)
-                ) {
-                    Text("🔧 এডমিন শান্ত\n(admin123)", color = FF_Yellow, fontSize = 10.sp, textAlign = TextAlign.Center)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun HomeHeaderSection(user: UserEntity?, viewModel: MainViewModel) {
@@ -1381,7 +1532,24 @@ fun HomeHeaderSection(user: UserEntity?, viewModel: MainViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("হ্যালো গেমার,", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                    val statusLabel = if (user?.email == "bd1rakib6677@gmail.com" || user?.isAdmin == true) "🌟 রিয়েল অ্যাকাউন্ট" else "🧪 টেস্ট ডেমো অ্যাকাউন্ট"
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("হ্যালো গেমার,", color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            color = if (statusLabel.startsWith("🌟")) FF_Orange_Light else FF_Card_Bg_Tinted,
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.padding(top = 1.dp)
+                        ) {
+                            Text(
+                                text = statusLabel,
+                                color = if (statusLabel.startsWith("🌟")) FF_Yellow else Color.LightGray,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
                     Text(user?.fullName ?: "প্লেয়ার", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
 
@@ -1438,7 +1606,7 @@ fun TournamentFilterRow(currentFilter: String, onFilterChanged: (String) -> Unit
             .padding(horizontal = 16.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        listOf("ALL" to "সব টুর্নামেন্ট", "SOLO" to "Solo", "DUO" to "Duo", "SQUAD" to "Squad", "MY" to "নিবন্ধিত").forEach { (filterVal, label) ->
+        listOf("ALL" to "সব টুর্নামেন্ট", "SOLO" to "Solo", "DUO" to "Duo", "SQUAD" to "Squad", "MY" to "নিবন্ধিত", "PROFILE" to "👤 আমার প্রোফাইল").forEach { (filterVal, label) ->
             val isSelected = currentFilter == filterVal
             Surface(
                 color = if (isSelected) FF_Orange else FF_Card_Bg,
@@ -1666,5 +1834,289 @@ fun walletMethodColor(method: String): Color {
         "bKash" -> BKash_Pink
         "Nagad" -> Nagad_Orange
         else -> Rocket_Purple
+    }
+}
+
+@Composable
+fun GamerProfileSection(
+    user: UserEntity?,
+    registrations: List<RegistrationEntity>,
+    viewModel: MainViewModel
+) {
+    if (user == null) return
+
+    val totalMatches = registrations.size
+    val totalKills = registrations.sumOf { it.kills }
+    val totalWinnings = registrations.sumOf { it.rewardEarned }
+    val booyahs = registrations.count { it.rank == 1 }
+
+    // Dynamic Rank resolver
+    val rankTitle = when {
+        totalWinnings >= 1500.0 -> "GRANDMASTER 🏆"
+        totalWinnings >= 800.0 -> "HEROIC 🔥"
+        totalWinnings >= 400.0 -> "DIAMOND IV 💎"
+        totalWinnings >= 150.0 -> "GOLD II 🎖️"
+        else -> "BRONZE I 🏅"
+    }
+
+    var showEditDialog by remember { mutableStateOf(false) }
+
+    var editFullName by remember { mutableStateOf(user.fullName) }
+    var editPhone by remember { mutableStateOf(user.phone) }
+    var editUid by remember { mutableStateOf(user.ffUid) }
+    var editIgn by remember { mutableStateOf(user.ffIgn) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        // GEOMETRIC AVATAR CARD
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
+            border = BorderStroke(1.dp, FF_Orange.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(FF_Orange_Light, RoundedCornerShape(40.dp))
+                        .border(2.dp, FF_Orange, RoundedCornerShape(40.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🎮", fontSize = 36.sp)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = user.ffIgn.uppercase(),
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = rankTitle,
+                    color = FF_Yellow,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Quick edit button
+                    Button(
+                        onClick = { showEditDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = FF_Orange_Light),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("প্রোফাইল সংশোধন ✏️", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { viewModel.addTestFundsToUser(user.email, 500.0) },
+                        colors = ButtonDefaults.buttonColors(containerColor = FF_Orange.copy(alpha = 0.2f)),
+                        border = BorderStroke(1.dp, FF_Orange),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("এড ফান্ড +৫০০৳", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // GAMING STATS TITLE
+        Text(
+            text = "🏆 আমার গেমার পরিসংখ্যান", 
+            color = Color.White, 
+            fontSize = 16.sp, 
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+        Text(
+            text = "BOOYAH Arena অটোমেটিক লিডারবোর্ড ট্র্যাকিং", 
+            color = Color.Gray, 
+            fontSize = 11.sp
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // STATS MULTI-COLS GRID
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            listOf(
+                "ম্যাচ খেলেছেন" to "${totalMatches} টি",
+                "মোট কিল সংখ্যা" to "${totalKills} টি"
+            ).forEach { (label, value) ->
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
+                    border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.15f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(label, color = Color.LightGray, fontSize = 11.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(value, color = FF_Orange, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            listOf(
+                "BOOYAH জিতেছেন" to "${booyahs} বার",
+                "অর্জিত প্রাইজমানি" to "${totalWinnings}৳"
+            ).forEach { (label, value) ->
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
+                    border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.15f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(label, color = Color.LightGray, fontSize = 11.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(value, color = FF_Yellow, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // ACCOUNTS INFO
+        Text("⚙️ প্লেয়ার অ্যাকাউন্ট সিকিউরিটি ও তথ্য", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.1f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("নাম:", color = Color.Gray, fontSize = 12.sp)
+                    Text(user.fullName, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Box(Modifier.fillMaxWidth().height(1.dp).background(Color.Gray.copy(alpha = 0.1f)))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("ইমেইল ঠিকানা:", color = Color.Gray, fontSize = 12.sp)
+                    Text(user.email, color = Color.LightGray, fontSize = 13.sp)
+                }
+                Box(Modifier.fillMaxWidth().height(1.dp).background(Color.Gray.copy(alpha = 0.1f)))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("মোবাইল নাম্বার:", color = Color.Gray, fontSize = 12.sp)
+                    Text(user.phone, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Box(Modifier.fillMaxWidth().height(1.dp).background(Color.Gray.copy(alpha = 0.1f)))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("ফ্রি ফায়ার প্লেয়ার UID:", color = Color.Gray, fontSize = 12.sp)
+                    Text(user.ffUid, color = FF_Yellow, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+                Box(Modifier.fillMaxWidth().height(1.dp).background(Color.Gray.copy(alpha = 0.1f)))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("গেম ইন-নেম (IGN):", color = Color.Gray, fontSize = 12.sp)
+                    Text(user.ffIgn.uppercase(), color = FF_Orange, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    // Edit Profile details action dialogue
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = {
+                Text("ফ্রি ফায়ার অ্যাকাউন্ট সংশোধন ✏️", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = editFullName,
+                        onValueChange = { editFullName = it },
+                        label = { Text("আপনার পুরো নাম") },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editPhone,
+                        onValueChange = { editPhone = it },
+                        label = { Text("মোবাইল নাম্বার") },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editUid,
+                        onValueChange = { editUid = it },
+                        label = { Text("ফ্রি ফায়ার UID") },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editIgn,
+                        onValueChange = { editIgn = it },
+                        label = { Text("গেম ইন-গেম নাম (IGN)") },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateGamerProfile(editFullName, editPhone, editUid, editIgn) { ok ->
+                            if (ok) {
+                                showEditDialog = false
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = FF_Orange)
+                ) {
+                    Text("সংরক্ষণ করুন")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }, colors = ButtonDefaults.textButtonColors(contentColor = Color.White)) {
+                    Text("বাতিল")
+                }
+            },
+            containerColor = FF_Card_Bg,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }

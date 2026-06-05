@@ -49,12 +49,12 @@ abstract class AppDatabase : RoomDatabase() {
                 // 1. Insert default admin
                 dao.insertUser(
                     UserEntity(
-                        email = "admin@booyah.com",
-                        passwordHash = "admin123", // For simplicity, plain text check is enough for demo/educational apps
-                        fullName = "Admin Shanto",
+                        email = "bd1admin@gmail.com",
+                        passwordHash = "BOOYAH_admin_2026",
+                        fullName = "Super Admin Shanto",
                         phone = "01711223344",
-                        ffUid = "111111111",
-                        ffIgn = "ADMIN_SHANTO",
+                        ffUid = "555555",
+                        ffIgn = "BOOYAH_ADMIN_OP",
                         balance = 99999.0,
                         isAdmin = true
                     )

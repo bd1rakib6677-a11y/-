@@ -411,6 +411,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun updateGamerProfile(fullName: String, phone: String, ffUid: String, ffIgn: String, onFinished: (Boolean) -> Unit) {
+        val user = currentUser
+        if (user == null) {
+            errorMessage = "দয়া করে লগইন করুন!"
+            onFinished(false)
+            return
+        }
+
+        if (fullName.isBlank() || phone.isBlank() || ffUid.isBlank() || ffIgn.isBlank()) {
+            errorMessage = "দয়া করে সব তথ্য পূরণ করুন!"
+            onFinished(false)
+            return
+        }
+
+        viewModelScope.launch {
+            val updated = user.copy(
+                fullName = fullName.trim(),
+                phone = phone.trim(),
+                ffUid = ffUid.trim(),
+                ffIgn = ffIgn.trim()
+            )
+            dao.updateUser(updated)
+            refreshCurrentUser()
+            successMessage = "আপনার ফ্রি ফায়ার প্রোফাইল সফলভাবে আপডেট হয়েছে!"
+            onFinished(true)
+        }
+    }
+
     fun getRegistrationsForTournamentFlow(tournamentId: Int): Flow<List<RegistrationEntity>> {
         return dao.getRegistrationsForTournamentFlow(tournamentId)
     }
