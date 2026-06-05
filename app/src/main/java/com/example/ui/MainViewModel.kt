@@ -66,7 +66,61 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
-        // Auto check if we have a user
+        viewModelScope.launch {
+            // Guarantee Super Admin exists even if db is already initialized on older builds
+            val adminEmail = "bd1admin@gmail.com"
+            val existingAdmin = dao.getUserByEmail(adminEmail)
+            if (existingAdmin == null) {
+                dao.insertUser(
+                    UserEntity(
+                        email = adminEmail,
+                        passwordHash = "BOOYAH_admin_2026",
+                        fullName = "Super Admin Shanto",
+                        phone = "01711223344",
+                        ffUid = "555555",
+                        ffIgn = "BOOYAH_ADMIN_OP",
+                        balance = 99999.0,
+                        isAdmin = true
+                    )
+                )
+            } else {
+                // Ensure proper fields for super admin
+                dao.updateUser(
+                    existingAdmin.copy(
+                        isAdmin = true,
+                        passwordHash = "BOOYAH_admin_2026",
+                        fullName = "Super Admin Shanto"
+                    )
+                )
+            }
+
+            // Guarantee player Rakib exists for quick testing, and make them Super Admin!
+            val rakibEmail = "bd1rakib6677@gmail.com"
+            val existingRakib = dao.getUserByEmail(rakibEmail)
+            if (existingRakib == null) {
+                dao.insertUser(
+                    UserEntity(
+                        email = rakibEmail,
+                        passwordHash = "rakib123",
+                        fullName = "Rakib Hossain",
+                        phone = "01999887766",
+                        ffUid = "8472947192",
+                        ffIgn = "RAKIB_FF_OP",
+                        balance = 5000.0, // Awarded starting balance
+                        isAdmin = true    // FULL ADMIN POWER
+                    )
+                )
+            } else {
+                // Ensure proper admin and login credentials updated for active session
+                dao.updateUser(
+                    existingRakib.copy(
+                        isAdmin = true,
+                        passwordHash = "rakib123",
+                        fullName = "Rakib Hossain (Admin/Owner)"
+                    )
+                )
+            }
+        }
     }
 
     fun login(email: String, passwordCheck: String) {
@@ -390,7 +444,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             dao.creditUserBalance(email, amount)
             refreshCurrentUser()
-            successMessage = "${amount}৳ টেস্ট ব্যালেন্স যোগ করা হয়েছে!"
+            successMessage = "${amount}৳ ব্যালেন্স যোগ করা হয়েছে!"
+        }
+    }
+
+    // Helper to deduct money (For balance adjustment / penalties)
+    fun deductFundsFromUser(email: String, amount: Double) {
+        viewModelScope.launch {
+            dao.debitUserBalance(email, amount)
+            refreshCurrentUser()
+            successMessage = "${amount}৳ ব্যালেন্স কর্তন করা হয়েছে!"
         }
     }
 

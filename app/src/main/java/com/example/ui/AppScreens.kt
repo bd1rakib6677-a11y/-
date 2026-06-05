@@ -1,5 +1,5 @@
 package com.example.ui
-
+import androidx.compose.animation.core.*
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -132,6 +132,44 @@ fun LoginScreen(viewModel: MainViewModel) {
                             color = FF_Yellow,
                             fontSize = 14.sp
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.Gray.copy(alpha = 0.2f)))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text("⚡ এক ক্লিকে সহজ এডমিন লগইন:", color = Color.LightGray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { 
+                                email = "bd1rakib6677@gmail.com"
+                                password = "rakib123"
+                                viewModel.login("bd1rakib6677@gmail.com", "rakib123")
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = FF_Orange_Light),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1.3f).height(38.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text("রাকিব এডমিন 👑", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                        }
+                        Button(
+                            onClick = { 
+                                email = "bd1admin@gmail.com"
+                                password = "BOOYAH_admin_2026"
+                                viewModel.login("bd1admin@gmail.com", "BOOYAH_admin_2026")
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = FF_Card_Bg_Tinted),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1.3f).height(38.dp).border(1.dp, FF_Yellow.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text("শান্ত এডমিন 🔧", color = FF_Yellow, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                        }
                     }
                 }
             }
@@ -1134,6 +1172,13 @@ fun AdminPanelScreen(viewModel: MainViewModel) {
     var perKillPrize by remember { mutableStateOf("10") }
     var maxPlayers by remember { mutableStateOf("48") }
 
+    val totalUsers = users.size
+    val totalTournaments = tournaments.size
+    val totalDepositsVal = allPayments.filter { it.type == "DEPOSIT" && it.status == "APPROVED" }.sumOf { it.amount }
+    val pendingWithdrawalsVal = allPayments.filter { it.type == "WITHDRAW" && it.status == "PENDING" }.sumOf { it.amount }
+
+    var searchQuery by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1141,27 +1186,81 @@ fun AdminPanelScreen(viewModel: MainViewModel) {
             .verticalScroll(rememberScrollState())
     ) {
         Text("🔧 এডমিন প্যানেল (Admin Master Control)", color = FF_Orange, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        Text("অটোমেটেড টুর্নামেন্ট ও পেমেন্ট রুল কন্ট্রোল করুন", color = Color.LightGray, fontSize = 11.sp, modifier = Modifier.padding(bottom = 16.dp))
+        Text("অটোমেটেড টুর্নামেন্ট ও পেমেন্ট রুল কন্ট্রোল করুন", color = Color.LightGray, fontSize = 11.sp, modifier = Modifier.padding(bottom = 12.dp))
 
-        // VIEW TOGGLES
+        // PREMIUM STATS ANALYTICS BANNER GRID
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val stats = listOf(
+                Triple("মোট ইউজার", "$totalUsers জন", FF_Orange),
+                Triple("মোট ডিপোজিট", "${totalDepositsVal}৳", FF_Green),
+                Triple("উইথড্র পেন্ডিং", "${pendingWithdrawalsVal}৳", FF_Yellow),
+                Triple("মোট টুর্নামেন্ট", "$totalTournaments টি", Color.Cyan)
+            )
+            stats.forEach { (title, value, color) ->
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
+                    border = BorderStroke(1.dp, color.copy(alpha = 0.25f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(title, color = Color.Gray, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(value, color = color, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 1)
+                    }
+                }
+            }
+        }
+
+        // VIEW TOGGLES WITH BEAUTIFUL ANIMATIONS
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("TOURNAMENTS" to "টুর্নামেন্ট", "PAYMENTS" to "পেমেন্ট (${allPayments.count { it.status == "PENDING" }})", "USERS" to "ইউজার গেমার").forEach { (tab, label) ->
                 val isSelected = activeViewTab == tab
-                Button(
-                    onClick = { activeViewTab = tab },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (isSelected) FF_Orange else Color.Gray.copy(alpha = 0.2f)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.weight(1f)
+                val bgAnim by animateColorAsState(
+                    targetValue = if (isSelected) FF_Orange_Light else FF_Card_Bg,
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                    label = "adm_tab_bg"
+                )
+                val borderAnim by animateColorAsState(
+                    targetValue = if (isSelected) FF_Orange else Color.Gray.copy(alpha = 0.2f),
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                    label = "adm_tab_border"
+                )
+
+                Surface(
+                    color = bgAnim,
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, borderAnim),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { activeViewTab = tab }
                 ) {
-                    Text(label, color = Color.White, fontSize = 11.sp, maxLines = 1)
+                    Text(
+                        text = label,
+                        color = if (isSelected) Color.White else FF_Text_Secondary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp)
+                    )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        if (activeViewTab == "TOURNAMENTS") {
-            // NEW TOURNAMENT CREATION FORM
+        Crossfade(targetState = activeViewTab, animationSpec = tween(450), label = "admin_view_transition") { tabState ->
+            when (tabState) {
+                "TOURNAMENTS" -> {
+                    // NEW TOURNAMENT CREATION FORM
             Surface(
                 color = FF_Card_Bg,
                 shape = RoundedCornerShape(12.dp),
@@ -1358,8 +1457,9 @@ fun AdminPanelScreen(viewModel: MainViewModel) {
                 }
             }
 
-        } else if (activeViewTab == "PAYMENTS") {
-            // DEPOSIT & WITHDRAW VERIFICATION QUEUE
+                }
+                "PAYMENTS" -> {
+                    // DEPOSIT & WITHDRAW VERIFICATION QUEUE
             Text("💳 পেমেন্ট রিকুয়েস্ট পেন্ডিং তালিকা (${allPayments.count { it.status == "PENDING" }})", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -1423,12 +1523,34 @@ fun AdminPanelScreen(viewModel: MainViewModel) {
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
-        } else {
-            // USERS LIST AND DEMO COIN ADJUSTER
-            Text("👥 নিবন্ধিত গেমার প্লেয়ার তালিকা (${users.size})", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
+                else -> {
+                    // LIVE USER SEARCH BAR
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("প্লেয়ার খুঁজুন (নাম / ইমেইল / UID / IGN)", color = FF_Text_Secondary) },
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                leadingIcon = { Text("🔍", fontSize = 14.sp, modifier = Modifier.padding(start = 10.dp)) }
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+
+            val filteredUsers = users.filter { u ->
+                val q = searchQuery.trim().lowercase()
+                q.isEmpty() ||
+                u.fullName.lowercase().contains(q) ||
+                u.email.lowercase().contains(q) ||
+                u.ffUid.contains(q) ||
+                u.ffIgn.lowercase().contains(q)
+            }
+
+            Text("👥 নিবন্ধিত গেমার প্লেয়ার তালিকা (${filteredUsers.size})", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(10.dp))
 
-            users.forEach { user ->
+            filteredUsers.forEach { user ->
+                var adjustAmountText by remember(user.email) { mutableStateOf("") }
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                     colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
@@ -1452,14 +1574,58 @@ fun AdminPanelScreen(viewModel: MainViewModel) {
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Actions for testing
+                        // Custom amount balance adjustment controls
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = adjustAmountText,
+                                onValueChange = { adjustAmountText = it },
+                                label = { Text("টাকার পরিমাণ (সমন্বয়)", fontSize = 11.sp, color = FF_Text_Secondary) },
+                                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = FF_Orange),
+                                modifier = Modifier.weight(1.2f).height(50.dp),
+                                singleLine = true
+                            )
+                            Button(
+                                onClick = {
+                                    val amt = adjustAmountText.toDoubleOrNull() ?: 100.0
+                                    viewModel.addTestFundsToUser(user.email, amt)
+                                    adjustAmountText = ""
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = FF_Green),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(34.dp).weight(1.1f),
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text("যোগ করুন +", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Button(
+                                onClick = {
+                                    val amt = adjustAmountText.toDoubleOrNull() ?: 100.0
+                                    viewModel.deductFundsFromUser(user.email, amt)
+                                    adjustAmountText = ""
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = FF_Red),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(34.dp).weight(1.1f),
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text("কর্তন করুন -", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // General quick actions
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
                                 onClick = { viewModel.addTestFundsToUser(user.email, 500.0) },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f)),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("+ ৫০০৳ টেস্ট টাকা", fontSize = 10.sp)
+                                Text("+ ৫০০৳ উপহার", fontSize = 10.sp)
                             }
 
                             if (!user.isAdmin) {
@@ -1473,6 +1639,8 @@ fun AdminPanelScreen(viewModel: MainViewModel) {
                             }
                         }
                     }
+                }
+            }
                 }
             }
         }
@@ -1579,18 +1747,69 @@ fun HomeHeaderSection(user: UserEntity?, viewModel: MainViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // SLIDER BANNER CARD
+            // SLIDER BANNER CARD with ambient pulsing outer-glow
+            val infinitePulseTransition = rememberInfiniteTransition(label = "banner_ambient_pulse")
+            val pulsingBorderColor by infinitePulseTransition.animateColor(
+                initialValue = FF_Orange.copy(alpha = 0.3f),
+                targetValue = FF_Yellow.copy(alpha = 0.9f),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1800, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "banner_border"
+            )
+
+            val pulsatingScale by infinitePulseTransition.animateFloat(
+                initialValue = 0.95f,
+                targetValue = 1.05f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "scale_pulse"
+            )
+
             Surface(
                 color = FF_Card_Bg,
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, FF_Yellow.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.2.dp, pulsingBorderColor),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("🔥 সাপ্তাহিক গ্র্যান্ড লীগ টুর্নামেন্ট", color = FF_Yellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text("BOOYAH করে জিতে নিন ১০০০৳ পর্যন্ত নগদ পুরস্কার!", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🔥 সাপ্তাহিক গ্র্যান্ড লীগ টুর্নামেন্ট", 
+                            color = FF_Yellow, 
+                            fontSize = 11.sp, 
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                        // Pulsing status dot
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(FF_Orange)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "BOOYAH করে জিতে নিন ১০০০৳ পর্যন্ত নগদ পুরস্কার!", 
+                        color = Color.White, 
+                        fontSize = 15.sp, 
+                        fontWeight = FontWeight.Black
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("প্লেয়ারদের কিল প্রতি থাকছে আলাদা ১০৳ বোনাস। যুক্ত হোন আজই!", color = Color.LightGray, fontSize = 11.sp)
+                    Text(
+                        text = "প্লেয়ারদের কিল প্রতি থাকছে আলাদা ১০৳ বোনাস। যুক্ত হোন আজই!", 
+                        color = Color.LightGray, 
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp
+                    )
                 }
             }
         }
@@ -1608,15 +1827,28 @@ fun TournamentFilterRow(currentFilter: String, onFilterChanged: (String) -> Unit
     ) {
         listOf("ALL" to "সব টুর্নামেন্ট", "SOLO" to "Solo", "DUO" to "Duo", "SQUAD" to "Squad", "MY" to "নিবন্ধিত", "PROFILE" to "👤 আমার প্রোফাইল").forEach { (filterVal, label) ->
             val isSelected = currentFilter == filterVal
+            
+            // Beautiful interactive click animations
+            val bgAnim by animateColorAsState(
+                targetValue = if (isSelected) FF_Orange_Light else FF_Card_Bg,
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+                label = "tab_bg"
+            )
+            val borderAnim by animateColorAsState(
+                targetValue = if (isSelected) FF_Orange else Color.Gray.copy(alpha = 0.25f),
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+                label = "tab_border"
+            )
+            
             Surface(
-                color = if (isSelected) FF_Orange else FF_Card_Bg,
+                color = bgAnim,
                 shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(1.dp, if (isSelected) FF_Orange else Color.Gray.copy(alpha = 0.3f)),
+                border = BorderStroke(1.dp, borderAnim),
                 modifier = Modifier.clickable { onFilterChanged(filterVal) }
             ) {
                 Text(
                     text = label,
-                    color = Color.White,
+                    color = if (isSelected) Color.White else FF_Text_Secondary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
@@ -1632,11 +1864,27 @@ fun TournamentCard(
     isJoined: Boolean,
     onJoinClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    // Smooth border color state transitions matching the expansion
+    val borderThickness by animateDpAsState(
+        targetValue = if (expanded) 1.5.dp else 1.dp,
+        animationSpec = tween(300),
+        label = "thickness_anim"
+    )
+    val borderColorAnim by animateColorAsState(
+        targetValue = if (expanded) FF_Orange else Color.Gray.copy(alpha = 0.15f),
+        animationSpec = tween(300),
+        label = "border_color_anim"
+    )
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = !expanded },
         colors = CardDefaults.cardColors(containerColor = FF_Card_Bg),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.15f))
+        border = BorderStroke(borderThickness, borderColorAnim)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Card Title + mode badge
@@ -1645,7 +1893,7 @@ fun TournamentCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = tournament.title,
                         color = Color.White,
@@ -1658,6 +1906,8 @@ fun TournamentCard(
                         fontSize = 11.sp
                     )
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Surface(
                     color = FF_Orange.copy(alpha = 0.15f),
@@ -1697,7 +1947,7 @@ fun TournamentCard(
                     Text("${tournament.perKillPrize}৳", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("💵 এন্ট্রি ফি", color = Color.Gray, fontSize = 10.sp)
+                    Text("💵 এন্ট্রি Fee", color = Color.Gray, fontSize = 10.sp)
                     Text("${tournament.entryFee}৳", color = FF_Orange, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -1711,7 +1961,7 @@ fun TournamentCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
-                    // Linear progress mapping registered slots (simulated as 18 joined for aesthetic richness)
+                    // Linear progress mapping registered slots (simulated for aesthetic richness)
                     val joinedMock = if (tournament.status == "COMPLETED") tournament.maxPlayers else if (tournament.id == 2) 20 else 14
                     val ratio = joinedMock.toFloat() / tournament.maxPlayers.toFloat()
                     LinearProgressIndicator(
@@ -1754,6 +2004,44 @@ fun TournamentCard(
                         Text("অংশগ্রহণ করুন", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
+            }
+
+            // Interactive expand collapse layout
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(modifier = Modifier.padding(top = 12.dp)) {
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.Gray.copy(alpha = 0.15f)))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text("📢 টুর্নামেন্ট বিস্তারিত বিবরণ ও নিয়মাবলী:", color = FF_Yellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        "• ম্যাপ: ${tournament.map.uppercase()}\n" +
+                        "• ম্যাচ টাইপ: ${tournament.gameMode}\n" +
+                        "• হ্যাক বা এমুলেটর ব্যবহার সম্পূর্ণ নিষিদ্ধ এবং করলে একাউন্ট পার্মানেন্ট ব্যান করা হবে।\n" +
+                        "• প্রতি কিলের জন্য পুরস্কার পাবেন ${tournament.perKillPrize} টাকা এবং চিকেন ডিনার বা Booyah করলে পাবেন ${tournament.booyahPrize} টাকা পুরস্কার।\n" +
+                        "• ম্যাচ শুরুর ১৫ মিনিট আগে ওল্ড বা নিউ পাসওয়ার্ড 'আমার ম্যাচ' পেজে পাওয়া যাবে।",
+                        color = Color.LightGray,
+                        fontSize = 11.sp,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (expanded) "বিস্তারিত বন্ধ করুন 🔼" else "বিস্তারিত নিয়মাবলী দেখতে চাপুন 🔽",
+                    color = FF_Orange.copy(alpha = 0.8f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

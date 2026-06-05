@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -77,14 +78,20 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        // Screen router crossfade animation
-                        when (currentScreen) {
-                            is Screen.Login -> LoginScreen(viewModel)
-                            is Screen.SignUp -> SignUpScreen(viewModel)
-                            is Screen.Home -> HomeScreen(viewModel)
-                            is Screen.MyMatches -> MyMatchesScreen(viewModel)
-                            is Screen.Wallet -> WalletScreen(viewModel)
-                            is Screen.AdminPanel -> AdminPanelScreen(viewModel)
+                        // Premium crossfade transition for smooth page changes
+                        Crossfade(
+                            targetState = currentScreen,
+                            animationSpec = tween(durationMillis = 400),
+                            label = "screen_navigation_fade"
+                        ) { screen ->
+                            when (screen) {
+                                is Screen.Login -> LoginScreen(viewModel)
+                                is Screen.SignUp -> SignUpScreen(viewModel)
+                                is Screen.Home -> HomeScreen(viewModel)
+                                is Screen.MyMatches -> MyMatchesScreen(viewModel)
+                                is Screen.Wallet -> WalletScreen(viewModel)
+                                is Screen.AdminPanel -> AdminPanelScreen(viewModel)
+                            }
                         }
                     }
                 }
