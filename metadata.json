@@ -1,0 +1,6 @@
+{
+  "name": "BOOYAH Arena",
+  "description": "ফ্রী ফায়ার টুর্নামেন্ট অ্যাপ্লিকেশন - জয়ী হয়ে রিওয়ার্ড অর্জন করুন!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
